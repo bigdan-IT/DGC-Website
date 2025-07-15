@@ -7,17 +7,16 @@ const Home: React.FC = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen mt-8">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-12 overflow-hidden floating-particles">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-600/5"></div>
+      <section className="relative py-12 overflow-hidden" style={{ paddingTop: '80px', marginTop: '20px' }}>
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="gaming-title text-5xl md:text-7xl mb-6">
+            <h1 className="gaming-title text-5xl md:text-7xl mb-6" style={{ marginTop: '0' }}>
               Welcome to Dan's Gaming Community
             </h1>
             <p className="text-xl md:text-2xl text-cyan-200 mb-8 leading-relaxed">
-              The ultimate gaming community where players unite, compete, and create legendary moments together.
+              Join alongside 2,500+ players on our various servers made for you.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
                               <a
@@ -53,7 +52,7 @@ const Home: React.FC = () => {
               </div>
               <h3 className="text-2xl font-semibold mb-4 text-cyan-300">Community Hub</h3>
               <p className="text-cyan-100 leading-relaxed">
-                Connect with fellow gamers, share strategies, and build lasting friendships in our vibrant community.
+                Connect with fellow gamers, share memories, and build lasting friendships in our vibrant community.
               </p>
             </div>
             
@@ -61,9 +60,9 @@ const Home: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-xl flex items-center justify-center mb-6 neon-glow">
                 <Trophy size={32} className="text-white" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4 text-cyan-300">Tournaments</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-cyan-300">Events</h3>
               <p className="text-cyan-100 leading-relaxed">
-                Compete in exciting tournaments, climb the leaderboards, and earn recognition for your skills.
+                Participate in our various events, games, and tournaments we host regularly throughout a variety of games.
               </p>
             </div>
             
@@ -81,24 +80,26 @@ const Home: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-black/30 to-gray-900/30">
+      <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div className="gaming-card p-6 rounded-xl">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">500+</div>
-              <div className="text-cyan-200">Active Players</div>
-            </div>
-            <div className="gaming-card p-6 rounded-xl">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">50+</div>
-              <div className="text-cyan-200">Tournaments</div>
-            </div>
-            <div className="gaming-card p-6 rounded-xl">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">1000+</div>
-              <div className="text-cyan-200">Posts Shared</div>
-            </div>
-            <div className="gaming-card p-6 rounded-xl">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">24/7</div>
-              <div className="text-cyan-200">Community Support</div>
+          <div className="gaming-card p-8 rounded-xl">
+            <div className="grid md:grid-cols-4 gap-8 text-center">
+              <div className="p-6 rounded-xl bg-black/20 border border-cyan-500/20">
+                <div className="text-4xl font-bold text-cyan-400 mb-2">1,500+</div>
+                <div className="text-cyan-200">Active Players</div>
+              </div>
+              <div className="p-6 rounded-xl bg-black/20 border border-cyan-500/20">
+                <div className="text-4xl font-bold text-cyan-400 mb-2">3</div>
+                <div className="text-cyan-200">Servers</div>
+              </div>
+              <div className="p-6 rounded-xl bg-black/20 border border-cyan-500/20">
+                <div className="text-4xl font-bold text-cyan-400 mb-2">10,000+</div>
+                <div className="text-cyan-200">Posts Shared</div>
+              </div>
+              <div className="p-6 rounded-xl bg-black/20 border border-cyan-500/20">
+                <div className="text-4xl font-bold text-cyan-400 mb-2">24/7</div>
+                <div className="text-cyan-200">Community Support</div>
+              </div>
             </div>
           </div>
         </div>
@@ -112,7 +113,7 @@ const Home: React.FC = () => {
               Ready to Join the Action?
             </h2>
             <p className="text-xl text-cyan-200 mb-8">
-              Become part of the most exciting gaming community and start your journey today.
+              Join Dan's Gaming Community today and make new friends, game, and have fun.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
@@ -146,7 +147,7 @@ const Home: React.FC = () => {
             <span className="text-xl font-bold gaming-title">Dan's Gaming Community</span>
           </div>
           <p className="text-cyan-300 mb-4">
-            The ultimate gaming community for competitive players and casual gamers alike.
+            A gaming community built for you.
           </p>
           <div className="flex justify-center space-x-6 text-cyan-400">
             <span>© 2024 Dan's Gaming Community</span>

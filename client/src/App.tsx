@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import StaffLogin from './pages/StaffLogin';
 import Servers from './pages/Servers';
@@ -14,22 +15,17 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-gaming-bg">
+        <ScrollToTop />
+        <div className="min-h-screen bg-gaming-bg floating-particles">
           <Navbar />
-          <main className="container mx-auto px-4 mt-20 pb-8">
+          <main className="page-container">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/staff-login" element={<StaffLogin />} />
               <Route path="/servers" element={<Servers />} />
               <Route path="/rules" element={<Rules />} />
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <Admin />
-                  </ProtectedRoute>
-                } 
-              />
+              <Route path="/staff" element={<Admin />} />
+              <Route path="/admin" element={<Admin />} />
               <Route 
                 path="/profile" 
                 element={

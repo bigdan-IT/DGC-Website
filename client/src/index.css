@@ -63,6 +63,55 @@ code {
   background: #718096;
 }
 
+/* Page layout */
+.page-container {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  position: relative;
+}
+
+.page-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(45deg, rgba(0, 212, 255, 0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(102, 126, 234, 0.03) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(0, 212, 255, 0.03) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(102, 126, 234, 0.03) 75%);
+  background-size: 60px 60px;
+  background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+.page-title {
+  margin-bottom: 2rem;
+  padding-top: 1rem;
+}
+
+/* Section spacing */
+.section-header {
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+/* Fix for all heading elements */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  overflow: visible;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
 /* Custom animations */
 @keyframes fadeIn {
   from {
@@ -118,6 +167,10 @@ code {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.2;
+  padding: 0.5rem 0;
+  display: block;
+  overflow: visible;
 }
 
 /* Neon glow effect */
@@ -146,6 +199,10 @@ code {
   background-clip: text;
   text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
   animation: subtle-glow 3s ease-in-out infinite alternate;
+  line-height: 1.2;
+  padding: 0.5rem 0;
+  display: block;
+  overflow: visible;
 }
 
 @keyframes subtle-glow {

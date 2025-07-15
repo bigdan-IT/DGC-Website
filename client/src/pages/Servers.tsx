@@ -38,13 +38,12 @@ const Servers: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen py-4 mt-8">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="gaming-title text-5xl md:text-6xl mb-6">
-            Gaming Servers
-          </h1>
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="text-center mb-12" style={{ paddingTop: '80px', marginTop: '20px' }}>
+        <h1 className="gaming-title text-5xl md:text-6xl mb-6" style={{ marginTop: '0' }}>
+          Gaming Servers
+        </h1>
           <p className="text-xl text-cyan-200 max-w-3xl mx-auto leading-relaxed">
             Join our dedicated gaming servers and connect with fellow players. 
             Find your perfect match and dominate the competition.
@@ -125,7 +124,6 @@ const Servers: React.FC = () => {
             </a>
           </div>
         </div>
-      </div>
     </div>
   );
 };

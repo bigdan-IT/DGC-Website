@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Users, Sword, Hammer, Gamepad2, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 const Rules: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('discord');
+  const [activeTab, setActiveTab] = useState('general');
 
   const rulesData = {
     discord: {
@@ -44,11 +44,6 @@ const Rules: React.FC = () => {
           type: "required",
           title: "Listen to Staff",
           description: "Always listen to staff. If you don't agree, follow their direction and make a ticket afterwards."
-        },
-        {
-          type: "required",
-          title: "Keep Secrets",
-          description: "Keep secrets, secrets. Respect confidentiality."
         },
         {
           type: "prohibited",
@@ -109,33 +104,18 @@ const Rules: React.FC = () => {
       rules: [
         {
           type: "required",
-          title: "Fair Play",
-          description: "No cheating, exploiting, or using unfair advantages. Play the game as intended."
-        },
-        {
-          type: "required",
-          title: "Team Killing",
-          description: "Intentional team killing is not allowed. Accidents happen, but repeated incidents will be addressed."
-        },
-        {
-          type: "required",
-          title: "Respect Other Players",
-          description: "No toxic behavior, excessive trash talk, or harassment of other players."
-        },
-        {
-          type: "required",
-          title: "Follow Server Settings",
-          description: "Respect server configurations, weapon restrictions, and game modes."
+          title: "Proper Duel Initiation",
+          description: "Press X+1 to flourish & initiate a duel. Do not RDM (Random Death Match) or engage in revenge RDM."
         },
         {
           type: "prohibited",
-          title: "No Griefing",
-          description: "Do not intentionally disrupt gameplay or ruin the experience for others."
+          title: "No RDM",
+          description: "Do not RDM (Random Death Match). Press X+1 to flourish & initiate a duel. No revenge RDM either!"
         },
         {
           type: "prohibited",
-          title: "No Exploits",
-          description: "Using game bugs, glitches, or exploits is strictly forbidden."
+          title: "No Interrupting Duels",
+          description: "Do not interrupt other duels."
         }
       ]
     },
@@ -193,13 +173,38 @@ const Rules: React.FC = () => {
         },
         {
           type: "required",
-          title: "Follow Instructions",
-          description: "Listen to staff members and follow their instructions when given."
+          title: "Listen to Staff",
+          description: "Always listen to staff; if you don't agree with something, follow their direction and make a ticket on the Discord."
         },
         {
           type: "required",
           title: "Respect Server Capacity",
           description: "Do not attempt to crash servers or cause performance issues."
+        },
+        {
+          type: "prohibited",
+          title: "No Spam",
+          description: "Do not spam in chat, voice, or any other communication method."
+        },
+        {
+          type: "prohibited",
+          title: "No Ban Evasion",
+          description: "Do not ban evade (ban evasion is joining on another account to avoid a ban)."
+        },
+        {
+          type: "prohibited",
+          title: "No Lying to Staff",
+          description: "Do not lie to staff."
+        },
+        {
+          type: "prohibited",
+          title: "No Staff Impersonation",
+          description: "Do not impersonate staff."
+        },
+        {
+          type: "prohibited",
+          title: "No Toxicity or Trolling",
+          description: "Do not be toxic or troll other players."
         },
         {
           type: "prohibited",
@@ -238,22 +243,21 @@ const Rules: React.FC = () => {
   };
 
   const tabs = [
+    { id: 'general', label: 'General', icon: Gamepad2 },
     { id: 'discord', label: 'Discord', icon: Users },
     { id: 'mordhau', label: 'Mordhau', icon: Sword },
-    { id: 'rust', label: 'Rust', icon: Hammer },
-    { id: 'general', label: 'General', icon: Gamepad2 }
+    { id: 'rust', label: 'Rust', icon: Hammer }
   ];
 
   const currentRules = rulesData[activeTab as keyof typeof rulesData];
 
   return (
-    <div className="min-h-screen py-4 mt-8">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="gaming-title text-5xl md:text-6xl mb-6">
-            Community Rules
-          </h1>
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="text-center mb-12" style={{ paddingTop: '80px', marginTop: '20px' }}>
+        <h1 className="gaming-title text-5xl md:text-6xl mb-6" style={{ marginTop: '0' }}>
+          Community Rules
+        </h1>
           <p className="text-xl text-cyan-200 max-w-3xl mx-auto leading-relaxed">
             Our community is built on respect, fair play, and fun. 
             Please familiarize yourself with these rules to ensure everyone has a great experience.
@@ -294,27 +298,70 @@ const Rules: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid gap-6">
-              {currentRules.rules.map((rule, index) => (
-                <div
-                  key={index}
-                  className={`p-6 rounded-xl border ${getRuleColor(rule.type)} transition-all duration-300 hover:scale-105`}
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0 mt-1">
-                      {getRuleIcon(rule.type)}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-cyan-300 mb-2">
-                        {rule.title}
-                      </h3>
-                      <p className="text-cyan-100 leading-relaxed">
-                        {rule.description}
-                      </p>
-                    </div>
-                  </div>
+            <div className="space-y-8">
+              {/* Required Rules */}
+              <div>
+                <h3 className="text-2xl font-semibold text-green-400 mb-4 flex items-center">
+                  <CheckCircle size={24} className="mr-2" />
+                  Required Rules
+                </h3>
+                <div className="grid gap-4">
+                  {currentRules.rules
+                    .filter(rule => rule.type === 'required')
+                    .map((rule, index) => (
+                      <div
+                        key={index}
+                        className={`p-6 rounded-xl border ${getRuleColor(rule.type)} transition-all duration-300 hover:scale-105`}
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0 mt-1">
+                            {getRuleIcon(rule.type)}
+                          </div>
+                          <div>
+                            <h4 className="text-xl font-semibold text-cyan-300 mb-2">
+                              {rule.title}
+                            </h4>
+                            <p className="text-cyan-100 leading-relaxed">
+                              {rule.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Prohibited Rules */}
+              <div>
+                <h3 className="text-2xl font-semibold text-red-400 mb-4 flex items-center">
+                  <XCircle size={24} className="mr-2" />
+                  Prohibited Rules
+                </h3>
+                <div className="grid gap-4">
+                  {currentRules.rules
+                    .filter(rule => rule.type === 'prohibited')
+                    .map((rule, index) => (
+                      <div
+                        key={index}
+                        className={`p-6 rounded-xl border ${getRuleColor(rule.type)} transition-all duration-300 hover:scale-105`}
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0 mt-1">
+                            {getRuleIcon(rule.type)}
+                          </div>
+                          <div>
+                            <h4 className="text-xl font-semibold text-cyan-300 mb-2">
+                              {rule.title}
+                            </h4>
+                            <p className="text-cyan-100 leading-relaxed">
+                              {rule.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -360,7 +407,6 @@ const Rules: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 };

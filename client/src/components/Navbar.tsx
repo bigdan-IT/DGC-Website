@@ -15,7 +15,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="glass border-b border-cyan-500/30 sticky top-0 z-50 backdrop-blur-lg">
+    <nav className="glass border-b border-cyan-500/30 relative z-50 backdrop-blur-lg">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Navigation */}
@@ -51,13 +51,13 @@ const Navbar: React.FC = () => {
 
           {/* Right Side - Admin Link and User Menu */}
           <div className="flex items-center space-x-4">
-            {user?.role === 'admin' && (
+            {(user?.role === 'admin' || user?.role === 'staff') && (
               <Link 
                 to="/admin" 
                 className="text-purple-400 hover:text-purple-300 transition-all duration-300 text-sm font-medium hover:scale-105 flex items-center space-x-1"
               >
                 <Shield size={16} />
-                <span>Admin</span>
+                <span>{user?.role === 'admin' ? 'Admin' : 'Staff'}</span>
               </Link>
             )}
 
@@ -143,14 +143,14 @@ const Navbar: React.FC = () => {
               >
                 Rules
               </Link>
-              {user?.role === 'admin' && (
+              {(user?.role === 'admin' || user?.role === 'staff') && (
                 <Link 
                   to="/admin" 
                   className="text-purple-400 hover:text-purple-300 transition-colors duration-200 flex items-center space-x-1"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Shield size={16} />
-                  <span>Admin</span>
+                  <span>{user?.role === 'admin' ? 'Admin' : 'Staff'}</span>
                 </Link>
               )}
               

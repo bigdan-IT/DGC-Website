@@ -7,13 +7,14 @@ interface User {
   email: string;
   role: string;
   avatar_url?: string;
+  discord_id?: string;
+  discord_roles?: string[];
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  loginWithStaffToken: (token: string, userData: User) => void;
   logout: () => void;
   loading: boolean;
 }
@@ -34,7 +35,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(localStorage.getItem('staffToken'));
   const [loading, setLoading] = useState(true);
 
   // Set up axios defaults
@@ -49,15 +50,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check if user is authenticated on app load
   useEffect(() => {
     const checkAuth = async () => {
+      console.log('Checking authentication...', { token: !!token });
+      
       if (token) {
         try {
-          const response = await axios.get('/api/auth/me');
-          setUser(response.data);
+          const response = await axios.get('/api/discord-auth/verify');
+          setUser(response.data.user);
+          console.log('Staff auth check successful');
         } catch (error) {
-          console.error('Auth check failed:', error);
-          localStorage.removeItem('token');
+          console.error('Staff auth check failed:', error);
+          localStorage.removeItem('staffToken');
           setToken(null);
         }
+      } else {
+        console.log('No token found - user not authenticated');
       }
       setLoading(false);
     };
@@ -65,44 +71,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, [token]);
 
-  const login = async (username: string, password: string) => {
-    try {
-      const response = await axios.post('/api/auth/login', { username, password });
-      const { token: newToken, user: userData } = response.data;
-      
-      localStorage.setItem('token', newToken);
-      setToken(newToken);
-      setUser(userData);
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Login failed');
-    }
-  };
-
-  const register = async (username: string, email: string, password: string) => {
-    try {
-      const response = await axios.post('/api/auth/register', { username, email, password });
-      const { token: newToken, user: userData } = response.data;
-      
-      localStorage.setItem('token', newToken);
-      setToken(newToken);
-      setUser(userData);
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Registration failed');
-    }
+  const loginWithStaffToken = (newToken: string, userData: User) => {
+    console.log('loginWithStaffToken called with:', { newToken: !!newToken, userData });
+    localStorage.setItem('staffToken', newToken);
+    setToken(newToken);
+    setUser(userData);
+    console.log('Staff token and user set in AuthContext');
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    console.log('Logout called - clearing all auth data');
+    
+    // Clear localStorage
+    localStorage.removeItem('staffToken');
+    
+    // Clear state
     setToken(null);
     setUser(null);
+    
+    // Clear axios headers
     delete axios.defaults.headers.common['Authorization'];
+    
+    console.log('Logout completed - auth state cleared');
   };
 
   const value = {
     user,
     token,
-    login,
-    register,
+    loginWithStaffToken,
     logout,
     loading
   };
