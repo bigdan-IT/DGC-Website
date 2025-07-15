@@ -3,10 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Posts from './pages/Posts';
-import Events from './pages/Events';
+import StaffLogin from './pages/StaffLogin';
+import Servers from './pages/Servers';
+import Rules from './pages/Rules';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -17,13 +16,12 @@ function App() {
       <Router>
         <div className="min-h-screen bg-gaming-bg">
           <Navbar />
-          <main className="container mx-auto px-4 py-8">
+          <main className="container mx-auto px-4 mt-20 pb-8">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/posts" element={<Posts />} />
-              <Route path="/events" element={<Events />} />
+              <Route path="/staff-login" element={<StaffLogin />} />
+              <Route path="/servers" element={<Servers />} />
+              <Route path="/rules" element={<Rules />} />
               <Route 
                 path="/admin" 
                 element={

@@ -61,7 +61,7 @@ const Register: React.FC = () => {
             </div>
           </div>
           <h2 className="text-3xl font-bold gradient-text mb-2">
-            Join Dans Duels
+            Join Dan's Gaming Community
           </h2>
           <p className="text-gray-400">
             Create your account and start your gaming journey

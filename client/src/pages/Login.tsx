@@ -50,7 +50,7 @@ const Login: React.FC = () => {
             Welcome Back
           </h2>
           <p className="text-gray-400">
-            Sign in to your Dans Duels account
+            Sign in to your Dan's Gaming Community account
           </p>
         </div>
 
