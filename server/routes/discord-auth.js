@@ -81,6 +81,12 @@ router.get('/callback', async (req, res) => {
 
   try {
     console.log('Exchanging code for access token...');
+    console.log('OAuth parameters:', {
+      client_id: DISCORD_CLIENT_ID,
+      redirect_uri: DISCORD_REDIRECT_URI,
+      code_length: code?.length || 0
+    });
+    
     // Exchange code for access token
     const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', 
       new URLSearchParams({
@@ -153,14 +159,18 @@ router.get('/callback', async (req, res) => {
       }
 
       if (existingUser) {
-        console.log('User exists, updating last login...');
-        // Update existing user
-        db.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE discord_id = ?', [discordUser.id]);
+        console.log('User exists, updating last login, username, and avatar...');
+        // Update existing user's username, avatar, and last login
+        const avatar_url = discordUser.avatar 
+          ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+          : null;
+        db.run('UPDATE users SET username = ?, avatar_url = ?, last_login = CURRENT_TIMESTAMP WHERE discord_id = ?', 
+          [discordUser.username, avatar_url, discordUser.id]);
         
         const token = jwt.sign(
           { 
             id: existingUser.id, 
-            username: existingUser.username, 
+            username: discordUser.username, 
             discord_id: discordUser.id,
             role: 'staff' 
           },
@@ -180,8 +190,8 @@ router.get('/callback', async (req, res) => {
           : null;
 
         db.run(
-          'INSERT INTO users (username, email, role, discord_id, avatar_url) VALUES (?, ?, ?, ?, ?)',
-          [username, `${username}@discord.com`, 'staff', discordUser.id, avatar_url],
+          'INSERT INTO users (username, email, role, discord_id, avatar_url, password_hash) VALUES (?, ?, ?, ?, ?, ?)',
+          [username, `${username}@discord.com`, 'staff', discordUser.id, avatar_url, null],
           function(err) {
             if (err) {
               console.error('Error creating user:', err);
@@ -210,7 +220,21 @@ router.get('/callback', async (req, res) => {
   } catch (error) {
     console.error('Discord OAuth error:', error);
     console.error('Error details:', error.response?.data || error.message);
-    res.redirect('/staff-login?error=authentication_failed');
+    
+    // Handle specific Discord errors
+    if (error.response?.data?.error === 'invalid_request' && 
+        error.response?.data?.error_description?.includes('rate limited')) {
+      console.error('Discord rate limit hit. Please wait 15-30 minutes before trying again.');
+      res.redirect('/staff-login?error=rate_limited');
+    } else if (error.response?.status === 400) {
+      console.error('Discord OAuth configuration error. Please check:');
+      console.error('1. Client ID and Client Secret are correct');
+      console.error('2. Redirect URI matches exactly: https://dansgaming.net/api/discord-auth/callback');
+      console.error('3. OAuth2 application is properly configured');
+      res.redirect('/staff-login?error=oauth_config');
+    } else {
+      res.redirect('/staff-login?error=authentication_failed');
+    }
   }
 });
 
