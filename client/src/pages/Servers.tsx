@@ -1,5 +1,5 @@
 import React from 'react';
-import { Server, Users, Globe, Shield, Zap, Gamepad2 } from 'lucide-react';
+import { Users, Globe, Shield, Zap, Gamepad2 } from 'lucide-react';
 
 const Servers: React.FC = () => {
   const servers = [

@@ -152,19 +152,14 @@ router.get('/roster', authenticateToken, async (req, res) => {
 
     // Process each member with proper async handling
     const processMembers = async () => {
-      console.log(`Processing ${guildMembers.length} guild members`);
-      console.log('Role mappings:', ROLE_MAPPINGS);
-      
       for (const member of guildMembers) {
         const userRoles = member.roles || [];
-        console.log(`Member ${member.user.username} (${member.user.id}) has roles:`, userRoles);
         
         // Check if user has any staff role
         const staffRole = userRoles.find(roleId => ROLE_MAPPINGS[roleId]);
         
         if (staffRole) {
           const roleName = ROLE_MAPPINGS[staffRole];
-          console.log(`Found staff member: ${member.user.username} with role ${roleName}`);
           
           // Get user info from database if exists
           const dbUser = await new Promise((resolve, reject) => {
@@ -199,8 +194,6 @@ router.get('/roster', authenticateToken, async (req, res) => {
       // Sort by role hierarchy (Founder > Management > Admin)
       const roleHierarchy = { 'Founder': 1, 'Management': 2, 'Admin': 3 };
       activeStaff.sort((a, b) => roleHierarchy[a.rank] - roleHierarchy[b.rank]);
-
-      console.log(`Total active staff found: ${activeStaff.length}`);
       
       // Check if past_staff table exists
       const tableExists = await new Promise((resolve, reject) => {
@@ -209,14 +202,12 @@ router.get('/roster', authenticateToken, async (req, res) => {
             console.error('Error checking if past_staff table exists:', err);
             resolve(false);
           } else {
-            console.log('past_staff table exists:', !!row);
             resolve(!!row);
           }
         });
       });
 
       // Load past staff from database
-      console.log('Loading past staff from database...');
       const pastStaff = await new Promise((resolve, reject) => {
         db.all(`
           SELECT 
@@ -235,14 +226,10 @@ router.get('/roster', authenticateToken, async (req, res) => {
             console.error('Error loading past staff:', err);
             resolve([]);
           } else {
-            console.log('Past staff query result:', rows);
             resolve(rows || []);
           }
         });
       });
-
-      console.log(`Total past staff found: ${pastStaff.length}`);
-      console.log('Past staff data:', pastStaff);
       
       res.json({ 
         activeStaff,
@@ -272,7 +259,6 @@ router.get('/roster', authenticateToken, async (req, res) => {
             console.error('Error checking if past_staff table exists:', err);
             resolve(false);
           } else {
-            console.log('past_staff table exists (fallback):', !!row);
             resolve(!!row);
           }
         });
@@ -297,7 +283,6 @@ router.get('/roster', authenticateToken, async (req, res) => {
             console.error('Error loading past staff:', err);
             resolve([]);
           } else {
-            console.log('Past staff query result (fallback):', rows);
             resolve(rows || []);
           }
         });

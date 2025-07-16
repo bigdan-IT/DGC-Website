@@ -185,31 +185,7 @@ function initializeDatabase() {
 
 
 
-    // Posts table
-    db.run(`CREATE TABLE IF NOT EXISTS posts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      content TEXT NOT NULL,
-      author_id INTEGER,
-      category TEXT DEFAULT 'general',
-      image_url TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (author_id) REFERENCES users (id)
-    )`);
 
-    // Events table
-    db.run(`CREATE TABLE IF NOT EXISTS events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT,
-      event_date DATETIME NOT NULL,
-      location TEXT,
-      max_participants INTEGER,
-      created_by INTEGER,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (created_by) REFERENCES users (id)
-    )`);
 
     // Past staff table
     db.run(`CREATE TABLE IF NOT EXISTS past_staff (
@@ -248,9 +224,7 @@ initializeDatabase();
 
 // Routes
 app.use('/api/discord-auth', discordAuthLimiter, require('./routes/discord-auth'));
-app.use('/api/posts', require('./routes/posts'));
-app.use('/api/events', require('./routes/events'));
-app.use('/api/users', require('./routes/users'));
+app.use('/api/discord-stats', require('./routes/discord-stats'));
 app.use('/api/staff', require('./routes/staff'));
 app.use('/api/staff-documents', require('./routes/staff-documents'));
 

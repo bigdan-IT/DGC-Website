@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { Gamepad2, Users, Calendar, Trophy, ArrowRight, Star } from 'lucide-react';
+import { Users, Calendar, Trophy, ArrowRight } from 'lucide-react';
 
 const Home: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   return (
     <div className="min-h-screen">

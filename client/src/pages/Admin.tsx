@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import RichTextEditor from '../components/RichTextEditor';
@@ -73,17 +73,17 @@ const DASHBOARD_SECTIONS = [
     requiredLevel: 1, // Admin level - can view
   },
   {
-    id: 'users',
-    title: 'Users',
-    description: 'Manage Discord user roles and permissions',
+    id: 'discord',
+    title: 'Discord',
+    description: 'Review Discord logs and moderate the server',
     icon: (
       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
       </svg>
     ),
     bgColor: 'bg-blue-500',
     buttonColor: 'bg-blue-600 hover:bg-blue-700',
-    buttonText: 'Manage Users',
+    buttonText: 'View Discord',
     requiredLevel: 2, // Management level
   },
   {
@@ -140,7 +140,7 @@ const Admin: React.FC = () => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [staffRoster, setStaffRoster] = useState<StaffMember[]>([]);
   const [pastStaff, setPastStaff] = useState<PastStaffMember[]>([]);
-  const [isEditingStaff, setIsEditingStaff] = useState(false);
+  // const [isEditingStaff, setIsEditingStaff] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
   const [showRemoveStaffModal, setShowRemoveStaffModal] = useState(false);
@@ -175,7 +175,7 @@ const Admin: React.FC = () => {
   const [isRemovingStaff, setIsRemovingStaff] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
-  const [showExportModal, setShowExportModal] = useState(false);
+  // const [showExportModal, setShowExportModal] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -196,6 +196,12 @@ const Admin: React.FC = () => {
   const [isSavingDocument, setIsSavingDocument] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [categories, setCategories] = useState<string[]>([]);
+
+  // Discord Stats state
+  const [discordStats, setDiscordStats] = useState<any>(null);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [moderationLogs, setModerationLogs] = useState<any[]>([]);
+  const [isLoadingDiscordData, setIsLoadingDiscordData] = useState(false);
 
   // Click outside handler for export dropdown
   useEffect(() => {
@@ -275,21 +281,63 @@ const Admin: React.FC = () => {
     return userLevel >= requiredLevel;
   };
 
+  const verifyToken = useCallback(async (token: string) => {
+    try {
+      const response = await fetch('/api/discord-auth/verify', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Use the AuthContext to set the user
+        loginWithStaffToken(token, data.user);
+        // Remove token from URL
+        const currentPath = window.location.pathname;
+        window.history.replaceState({}, document.title, currentPath);
+      } else {
+        // Token is invalid, redirect to staff login
+        navigate('/staff-login');
+      }
+    } catch (error) {
+      console.error('Token verification error:', error);
+      navigate('/staff-login');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [loginWithStaffToken, navigate, setIsProcessing]);
+
+  const refreshUserRoles = useCallback(async () => {
+    try {
+      const response = await fetch('/api/discord-auth/verify', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('staffToken')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update the user with fresh Discord roles
+        loginWithStaffToken(localStorage.getItem('staffToken') || '', data.user);
+      }
+    } catch (error) {
+      console.error('Error refreshing user roles:', error);
+    }
+  }, [loginWithStaffToken]);
+
   useEffect(() => {
     const token = searchParams.get('token');
-    console.log('Admin component useEffect:', { token: !!token, user: !!user, loading });
     
     if (token && !user) {
-      console.log('Token found, verifying...');
       setIsProcessing(true);
       // Verify the token and get user info
       verifyToken(token);
     } else if (!user && !loading) {
-      console.log('No token and no user, redirecting to staff login');
       // No token and no user, redirect to staff login
       navigate('/staff-login');
     }
-  }, [searchParams, user, loading, navigate]);
+  }, [searchParams, user, loading, navigate, verifyToken]);
 
   // Refresh user's Discord roles on every page load
   useEffect(() => {
@@ -316,72 +364,12 @@ const Admin: React.FC = () => {
       
       refreshUserRoles();
     }
-  }, [user?.id, isProcessing]); // Only depend on user ID and processing state, not the entire user object
-
-  const refreshUserRoles = async () => {
-    console.log('refreshUserRoles called:', { 
-      currentPath: window.location.pathname,
-      hasToken: !!localStorage.getItem('staffToken')
-    });
-    
-    try {
-      const response = await fetch('/api/discord-auth/verify', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('staffToken')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Role refresh successful - updating user data');
-        // Update the user with fresh Discord roles
-        loginWithStaffToken(localStorage.getItem('staffToken') || '', data.user);
-      } else {
-        console.log('Role refresh failed:', response.status);
-      }
-    } catch (error) {
-      console.error('Error refreshing user roles:', error);
-    }
-  };
-
-  const verifyToken = async (token: string) => {
-    console.log('Verifying token...');
-    try {
-      const response = await fetch('/api/discord-auth/verify', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      console.log('Token verification response:', response.status, response.ok);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Token verification successful, user data:', data.user);
-        // Use the AuthContext to set the user
-        loginWithStaffToken(token, data.user);
-        // Remove token from URL
-        const currentPath = window.location.pathname;
-        window.history.replaceState({}, document.title, currentPath);
-        console.log('Token verification complete, user should be logged in');
-      } else {
-        console.log('Token verification failed, redirecting to staff login');
-        // Token is invalid, redirect to staff login
-        navigate('/staff-login');
-      }
-    } catch (error) {
-      console.error('Token verification error:', error);
-      navigate('/staff-login');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  }, [user?.id, isProcessing, refreshUserRoles, user]); // Include all dependencies
 
   const handleLogout = () => {
-    console.log('Admin logout handler called');
     logout();
     // Navigate immediately - AuthContext will handle the logout state
-      navigate('/staff-login');
+    navigate('/staff-login');
   };
 
   // Staff roster management functions
@@ -414,10 +402,8 @@ const Admin: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log('Staff roster data:', data);
       setStaffRoster(data.activeStaff || []);
       setPastStaff(data.pastStaff || []);
-      console.log('Set past staff:', data.pastStaff || []);
     } catch (error) {
       console.error('Error loading staff roster:', error);
       // Fallback to empty arrays if API fails
@@ -432,13 +418,14 @@ const Admin: React.FC = () => {
       loadStaffRoster();
     } else if (panelId === 'staff-info') {
       loadDocuments();
+    } else if (panelId === 'discord') {
+      loadDiscordData();
     }
   };
 
   const handleBackToDashboard = () => {
     setActivePanel(null);
     setEditingMember(null);
-    setIsEditingStaff(false);
     setShowAddStaffModal(false);
     setShowRemoveStaffModal(false);
     setShowEditPastStaffModal(false);
@@ -812,10 +799,10 @@ const Admin: React.FC = () => {
 
 
 
-  const handleRemoveStaff = (member: StaffMember) => {
-    setRemovingMember(member);
-    setShowRemoveStaffModal(true);
-  };
+  // const handleRemoveStaff = (member: StaffMember) => {
+  //   setRemovingMember(member);
+  //   setShowRemoveStaffModal(true);
+  // };
 
   const handleEditPastStaff = (member: PastStaffMember) => {
     setEditingPastMember(member);
@@ -1086,6 +1073,65 @@ const Admin: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Discord Stats functions
+  const loadDiscordData = async () => {
+    setIsLoadingDiscordData(true);
+    try {
+      const token = localStorage.getItem('staffToken');
+      if (!token) {
+        console.error('No staff token found');
+        return;
+      }
+      const [statsResponse, activityResponse, logsResponse] = await Promise.all([
+        fetch('/api/discord-stats/server-stats', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }),
+        fetch('/api/discord-stats/recent-activity', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }),
+        fetch('/api/discord-stats/moderation-logs', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      ]);
+      
+
+
+      if (statsResponse.ok && activityResponse.ok && logsResponse.ok) {
+        const statsData = await statsResponse.json();
+        const activityData = await activityResponse.json();
+        const logsData = await logsResponse.json();
+        
+        setDiscordStats(statsData);
+        setRecentActivity(activityData);
+        setModerationLogs(logsData);
+      } else {
+        console.error('Failed to fetch Discord data');
+        if (!statsResponse.ok) {
+          const errorData = await statsResponse.json().catch(() => ({}));
+          console.error('Server stats error:', errorData);
+        }
+        if (!activityResponse.ok) {
+          const errorData = await activityResponse.json().catch(() => ({}));
+          console.error('Activity error:', errorData);
+        }
+        if (!logsResponse.ok) {
+          const errorData = await logsResponse.json().catch(() => ({}));
+          console.error('Logs error:', errorData);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading Discord data:', error);
+    } finally {
+      setIsLoadingDiscordData(false);
+    }
+  };
+
   // Staff Info functions
   const loadDocuments = async () => {
     try {
@@ -1338,6 +1384,126 @@ const Admin: React.FC = () => {
             getCategoryColor={getCategoryColor}
             getAccessLevelColor={getAccessLevelColor}
           />
+
+        ) : activePanel === 'discord' ? (
+          <div className="glass p-6 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">Discord Moderation</h2>
+                <p className="text-gray-300">Review logs and moderate the Discord server</p>
+              </div>
+              {isLoadingDiscordData && (
+                <div className="flex items-center text-cyan-400">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cyan-400 mr-2"></div>
+                  Loading...
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Recent Activity */}
+              <div className="glass p-4 rounded-lg border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-3">Recent Activity</h3>
+                <div className="space-y-2">
+                  {isLoadingDiscordData ? (
+                    <div className="text-sm text-gray-400">Loading activity...</div>
+                  ) : recentActivity.length > 0 ? (
+                    recentActivity.slice(0, 3).map((activity) => (
+                      <div key={activity.id} className="text-sm text-gray-300">
+                        <span className="text-cyan-400">[{new Date(activity.timestamp).toLocaleTimeString()}]</span> {activity.details}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-400">No recent activity</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Moderation Actions */}
+              <div className="glass p-4 rounded-lg border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-3">Quick Actions</h3>
+                <div className="space-y-2">
+                  <button className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors">
+                    Ban User
+                  </button>
+                  <button className="w-full px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm transition-colors">
+                    Timeout User
+                  </button>
+                  <button className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+                    View Logs
+                  </button>
+                </div>
+              </div>
+
+              {/* Server Stats */}
+              <div className="glass p-4 rounded-lg border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-3">Server Stats</h3>
+                <div className="space-y-2 text-sm text-gray-300">
+                  {isLoadingDiscordData ? (
+                    <div className="text-gray-400">Loading stats...</div>
+                  ) : discordStats ? (
+                    <>
+                      <div>Online Members: <span className="text-green-400">{discordStats.onlineMembers}</span></div>
+                      <div>Total Members: <span className="text-blue-400">{discordStats.totalMembers}</span></div>
+                      <div>Active Channels: <span className="text-purple-400">{discordStats.activeChannels}</span></div>
+                      {discordStats.boostLevel > 0 && (
+                        <div>Boost Level: <span className="text-pink-400">Level {discordStats.boostLevel}</span></div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-gray-400">
+                      Failed to load stats
+                      <div className="text-xs text-gray-500 mt-1">
+                        Check Discord bot configuration
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Recent Moderation Logs</h3>
+              <div className="glass border border-white/10 rounded-lg overflow-hidden">
+                <div className="bg-gray-800 px-4 py-3 border-b border-gray-600">
+                  <div className="grid grid-cols-5 gap-4 text-sm font-medium text-gray-300">
+                    <div>Time</div>
+                    <div>Action</div>
+                    <div>Moderator</div>
+                    <div>User</div>
+                    <div>Reason</div>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-600">
+                  {isLoadingDiscordData ? (
+                    <div className="px-4 py-3 text-center text-gray-400">Loading logs...</div>
+                  ) : moderationLogs.length > 0 ? (
+                    moderationLogs.slice(0, 5).map((log) => (
+                      <div key={log.id} className="px-4 py-3 grid grid-cols-5 gap-4 text-sm">
+                        <div className="text-gray-300">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </div>
+                        <div className={`${
+                          log.action === 'ban' ? 'text-red-400' :
+                          log.action === 'timeout' ? 'text-yellow-400' :
+                          log.action === 'warning' ? 'text-green-400' :
+                          log.action === 'kick' ? 'text-orange-400' :
+                          'text-gray-400'
+                        } capitalize`}>
+                          {log.action}
+                        </div>
+                        <div className="text-white">{log.moderator}</div>
+                        <div className="text-white">{log.user}</div>
+                        <div className="text-gray-400">{log.reason}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-center text-gray-400">No moderation logs found</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
         ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2039,8 +2205,7 @@ const StaffRosterPanel: React.FC<{
   };
 
     // Debug logging
-  console.log('StaffRosterPanel - pastStaff:', pastStaff);
-  console.log('StaffRosterPanel - pastStaff.length:', pastStaff.length);
+  
   
   return (
     <div className="space-y-8">
@@ -2183,7 +2348,7 @@ const StaffRosterPanel: React.FC<{
 
       {/* Past Staff Section */}
       {(() => {
-        console.log('Rendering past staff section, length:', pastStaff.length);
+    
         return null;
       })()}
       {pastStaff.length > 0 && (
